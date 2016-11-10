@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        #wrapper {
+            @apply(--layout-horizontal);
+        }
+        #detail-container {
+            padding: 20px;
+            width: 20vw;
+        }
+
+        #detail-container > div {
+            margin: 2vw 0;
+        }
+
+        #detail-container > div > div:first-of-type {
+            font-weight: bold;
+        }
+        #req-container {
+            margin-top: 2.5vh;
+        }
+        #req-container > ul > li {
+            padding: 1vh;
+            list-style: square;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div id="wrapper">
+    <div id="detail-container">
+        <div>
+            <div>Artist: </div>
+            <a href="/artist/{{ object.artist.pk }}">{{ object.artist }}</a>
+        </div>
+        <div>
+            <div>Scene: </div>
+            <div>{{ object.stage }}</div>
+        </div>
+        <div>
+            <div>Dato: </div>
+            <div>{{ object.date }}</div>
+        </div>
+        <div>
+            <div>Bookingavgift: </div>
+            <div>{{ object.artist.booking_fee }} kr</div>
+        </div>
+        <div>
+            <div>Tilbud: </div>
+            <div>{{ object.offer }}</div>
+        </div>
+        </div>
+        {% if object.requirements %}
+        <div id="req-container">
+            <h2> Behovsliste </h2>
+            {% autoescape off %}
+            {{ object.requirements|listify }}
+            {% endautoescape %}
+        </div>
+        {% endif %}
+</div>
+{% endblock %}
+

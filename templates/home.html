@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+    <link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        #container {
+            @apply(--layout-horizontal);
+            @apply(--layout-around-justified);
+        }
+
+        h4 {
+            text-align: center;
+        }
+
+        paper-material {
+            background: white;
+            padding: 10px;
+            margin: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="container">
+        {% if request.user|has_group:'director' or request.user|has_group:'manager' %}
+        {% if pending %}
+            <div>
+                <h4>Tilbud som venter godkjenning</h4>
+                {% for event in pending %}
+                    <a href="/offer/{{ event.pk }}">
+                        <paper-material>
+                            <div> {{ event.artist.name }} @ {{ event.stage.name }}</div>
+                            <div> Date: {{ event.date }} </div>
+                        </paper-material>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if sent %}
+            <div>
+                <h4>Tilbud sendt til band manager</h4>
+                {% for event in sent %}
+                    <a href="/offer/{{ event.pk }}">
+                        <paper-material>
+                            <div> {{ event.artist.name }} @ {{ event.stage.name }}</div>
+                            <div> Date: {{ event.date }} </div>
+                        </paper-material>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if accepted %}
+        <div>
+            <h4>Tilbud godkjent av band manager</h4>
+            {% for event in accepted %}
+            <a href="/offer/{{ event.pk }}">
+                <paper-material>
+                    <div> {{ event.artist.name }} @ {{ event.stage.name }}</div>
+                    <div> Date: {{ event.date }} </div>
+                </paper-material>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% elif request.user|has_group:'technician' %}
+            {% if working_events %}
+                <div>
+                <h4>Du skal jobbe ved disse arrangementene fremover</h4>
+                {% for event in working_events %}
+                    <a href="{{ event.get_absolute_url }}">
+                        <paper-material>
+                            <div> {{ event.artist.name }} @ {{ event.stage.name }}</div>
+                            {% if request.user|has_group:'rigging' %}
+                                <div> Opprigging 09:00 - 12.00 | Nedrigging 24:00 - 03:00</div>
+                            {% elif request.user|has_group:'sound_light' %}
+                                <div> Lys- og lydansvar 18:00 - 24:00 </div>
+                            {% else %}
+                                <div> Du har ikke blitt tildelt noen arbeidsoppgaver. </div>
+                            {% endif %}
+                            <div> Date: {{ event.date }} </div>
+                        </paper-material>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <h2>Du er ikke tildelt noen arrangemanger enda, hør med sjefen da hvis du vil jobbe!</h2>
+            {% endif %}
+                </div>
+        {% endif %}
+    </div>
+{% endblock %}
+

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        form {
+            display: table;
+            padding: 20px;
+        }
+
+        p {
+            display: table-row;
+            height: 30px;
+        }
+
+        label {
+            vertical-align: top;
+            width: 100px;
+        }
+
+        label, input, textarea {
+            display: table-cell;
+        }
+
+        input[type=submit] {
+            width: 100px;
+        }
+
+        fieldset {
+            border: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+    <form method="post" action="">
+        {% csrf_token %}
+        <fieldset {% if object.status > 0 %}disabled{% endif %}>
+            <p><label for="id_artist">Artist:</label>{{ form.artist }} </p>
+            <p><label for="id_stage">Scene:</label>{{ form.stage }}</p>
+            <p><label for="id_date">Dato:</label>{{ form.date }}</p>
+            <p><label for="id_offer">Tilbud:</label>{{ form.offer }}</p>
+        </fieldset>
+        {% if object.status > 0 %}
+            <div hidden>
+                <input name="artist" id="artist">
+                <input name="stage" id="stage">
+                <input name="date" id="date">
+                <input name="offer" id="offer">
+            </div>
+        {% endif %}
+
+        {% if object %}
+            {% if object.status == 3 %}
+                <fieldset>
+                    <p><label for="description">Beskrivelse:</label><textarea id="description" name="description"></textarea></p>
+                    <p><label for="ticket_price">Billettpris:</label><input id="ticket_price" name="ticket_price" type="number" value="{% calc_ticket_price %}"></p>
+                </fieldset>
+            {% endif %}
+        {% endif %}
+        <fieldset>
+            <p>
+                {% if object.status == 0 %}
+                    <input type="radio" name="status" value="approved"> Godkjent<br>
+                    <input type="radio" name="status" value="declined"> Avslått
+                {% elif object.status == 2 %}
+                    <input type="checkbox" name="status" value="accepted">Godkjent av manager<br>
+                {% elif object.status == 3 %}
+                    <input type="checkbox" name="status" value="published">Publiser<br>
+                {% endif %}
+            </p>
+        </fieldset>
+        <p>
+            <input type="submit" value="{% if object %}Oppdater Tilbud{% else %}Lag Tilbud{% endif %}"/>
+        </p>
+     {{ form.non_field_errors }}
+    </form>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var status = parseInt('{{ object.status }}0');
+        if (status > 0) {
+            for (var field of ['artist', 'stage', 'date', 'offer']) {
+                document.querySelector(`#${field}`).value = document.querySelector(`#id_${field}`).value;
+            }
+        }
+
+        var disabledDates = JSON.parse('{{ disableddates|safe }}');
+
+        function showDate(date) {
+            var select = document.querySelector('#id_stage');
+            var stage = select.options[select.value].text;
+
+            if (!select.value || date < new Date()) {
+                return [0];
+            } else if (!(stage in disabledDates)) {
+                return [1];
+            } else {
+                return [!disabledDates[stage].includes(jQuery.datepicker.formatDate('dd-mm-yy', date))];
+            }
+        }
+
+        $("#id_date").datepicker({
+            beforeShowDay: showDate
+        });
+    </script>
+{% endblock script %}
+
+

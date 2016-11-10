@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+    <link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+    <link rel="import" href="{% static 'components/iron-icons/iron-icons.html' %}">
+    <link rel="import" href="{% static 'components/paper-fab/paper-fab.html' %}">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        paper-material {
+            @apply(--layout-horizontal);
+            @apply(--layout-center);
+            margin: 20px 0;
+            background: white;
+            border-radius: 3px;
+        }
+
+        paper-material > div {
+            margin-left: 20px;
+            font-size: 120%;
+        }
+
+        paper-fab {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            --paper-fab-background: #941c2c;
+        }
+
+        form {
+            @apply(--layout-horizontal);
+            @apply(--layout-center-justified);
+            @apply(--layout-center);
+        }
+
+        form > * {
+            margin: 0 10px;
+        }
+
+        #container {
+            padding: 20px;
+        }
+
+        #tumbnail {
+            width: 64px;
+            height: 64px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="container">
+        <form action="/artists/" method="get">
+            Artist:{{ artist_form.query }}
+            <input type="submit" value="Søk" />
+        </form>
+        <div>
+            {% for artist in object_list %}
+                <a href="/artist/{{ artist.id }}">
+                    <paper-material>
+                        <img id="tumbnail" src="{% get_artist_image artist 'medium' %}">
+                        <div>{{ artist.name }}</div>
+                    </paper-material>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    <a href="/artist/add"><paper-fab icon="add"></paper-fab></a>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

@@ -1,0 +1,132 @@
+{% load static %}
+{% load booky_extras %}
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>Booky</title>
+    <script src="{% static 'components/webcomponentsjs/webcomponents-lite.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <link href="https://samfundet.no/assets/favicon-468c3c979a06d9bd1f4e90a76f9c5dea.ico" rel="icon">
+    <link rel="import" href="{% static 'components/app-layout/app-layout.html' %}">
+    <link rel="import" href="{% static 'components/iron-flex-layout/iron-flex-layout.html' %}">
+    <link rel="import" href="{% static 'components/paper-icon-button/paper-icon-button.html' %}">
+    <link rel="import" href="{% static 'components/paper-badge/paper-badge.html' %}">
+    <link rel="import" href="{% static 'components/iron-icons/iron-icons.html' %}">
+    <link rel="import" href="{% static 'elements/account-dropdown.html' %}">
+
+    {% block import %}
+    {% endblock %}
+
+    <style is="custom-style">
+        body {
+            margin: 0;
+            font-family: 'Roboto', 'Noto', sans-serif;
+            background-color: #eee;
+        }
+
+        app-toolbar {
+            color: #fff;
+            height: 50px;
+        }
+
+        app-header app-toolbar {
+            background-color: #b21d27;
+        }
+
+        app-drawer {
+            --app-drawer-scrim-background: rgba(101, 101, 101, 0.3);
+
+            --app-drawer-content-container: {
+                background-color: rgb(101, 101, 101);
+            }
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .drawer-list {
+            padding-top: 28px;
+        }
+
+        .drawer-list a {
+            color: white;
+            padding: 12px 16px;
+            display: block;
+            font-size: 20px;
+            font-weight: 400;
+            text-decoration: none;
+        }
+
+        .active {
+            background: rgb(80, 80, 80);
+        }
+
+        main {
+            height: 100%;
+        }
+    </style>
+
+    {% block style %}
+    {% endblock %}
+</head>
+<body>
+<app-drawer-layout fullbleed>
+    <app-drawer>
+        <app-toolbar>Booky</app-toolbar>
+        <div class="drawer-list">
+            {% if request.user|has_group:'director' %}
+                <a class="{% if request.resolver_match.url_name == "home" %}active{% endif %}" href="/">Hjem</a>
+                <a class="{% if request.resolver_match.url_name == "event-list" %}active{% endif %}" href="/events">Arrangment</a>
+                <a class="{% if request.resolver_match.url_name == "offer-list" %}active{% endif %}" href="/offers">Tilbud</a>
+                <a class="{% if request.resolver_match.url_name == "calendar" %}active{% endif %}" href="/calendar">Kalender</a>
+                <a class="{% if request.resolver_match.url_name == "artist-list" %}active{% endif %}" href="/artists">Artister</a>
+                <a class="{% if request.resolver_match.url_name == "result-list" %}active{% endif %}" href="/results">Resultat</a>
+            {% elif request.user|has_group:'manager' %}
+                <a class="{% if request.resolver_match.url_name == "event-list" %}active{% endif %}" href="/events">Arrangment</a>
+                <a class="{% if request.resolver_match.url_name == "offer-list" %}active{% endif %}" href="/offers">Tilbud</a>
+                <a class="{% if request.resolver_match.url_name == "calendar" %}active{% endif %}" href="/calendar">Kalender</a>
+                <a class="{% if request.resolver_match.url_name == "artist-list" %}active{% endif %}" href="/artists">Artister</a>
+            {% elif request.user|has_group:'organizer' %}
+                <a class="{% if request.resolver_match.url_name == "home" %}active{% endif %}" href="/">Hjem</a>
+                <a class="{% if request.resolver_match.url_name == "event-list" %}active{% endif %}" href="/events">Arrangment</a>
+                <a class="{% if request.resolver_match.url_name == "calendar" %}active{% endif %}" href="/calendar">Kalender</a>
+                <a class="{% if request.resolver_match.url_name == "result-list" %}active{% endif %}" href="/results">Resultat</a>
+            {% elif request.user|has_group:'technician' %}
+                <a class="{% if request.resolver_match.url_name == "home" %}active{% endif %}" href="/">Hjem</a>
+            {% elif request.user|is_artist_manager %}
+                <a class="{% if request.resolver_match.url_name == "home" %}active{% endif %}" href="/">Home</a>
+                <a class="{% if request.resolver_match.url_name == "calendar" %}active{% endif %}" href="/calendar">Kalender</a>
+                <a class="{% if request.resolver_match.url_name == "offer-list" %}active{% endif %}" href="/offers">Tilbud</a>
+            {% else %}
+                <a class="{% if request.resolver_match.url_name == "home" %}active{% endif %}" href="/">Home</a>
+                <a class="{% if request.resolver_match.url_name == "calendar" %}active{% endif %}" href="/calendar">Kalender</a>
+
+            {% endif %}
+
+
+        </div>
+    </app-drawer>
+
+    <app-header-layout has-scrolling-region>
+        <app-header condenses reveals>
+            <app-toolbar>
+                <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                <div main-title></div>
+                <account-dropdown username="{{ user.username }}" group="{% if user.groups.all.0 %}{{ user.groups.all.0|capfirst }}{% elif user.is_superuser %}Admin{% else %}Banduser{% endif %}"></account-dropdown>
+            </app-toolbar>
+        </app-header>
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </app-header-layout>
+</app-drawer-layout>
+{% block script %}
+{% endblock %}
+</body>
+</html>

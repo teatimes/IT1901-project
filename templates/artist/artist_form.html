@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block import %}
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        #container {
+            padding: 20px;
+        }
+
+        form {
+            width: 300px;
+        }
+
+        p {
+            @apply(--layout-horizontal);
+            @apply(--layout-justified);
+        }
+
+        p > input {
+            width: 200px;
+        }
+
+        input[type="submit"] {
+            float: right;
+            width: 80px;
+        }
+
+        label {
+            text-align: right;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div id="container">
+        <h1>Legg til artist</h1>
+        <form class="" method="post" action="">{% csrf_token %}
+            <p><label for="id_name">Navn:&nbsp;</label>{{ form.name }}</p>
+            <p><label for="id_genre">Sjanger:&nbsp;</label>{{ form.genre }}</p>
+            <p><label for="id_booking_fee">Avgift:&nbsp;</label>{{ form.booking_fee }}</p>
+            {{ form.mbid }}
+            {{ form.artist_info }}
+            {{ form.album_info }}
+            <input id="submit-button" type="submit" value="{% if object %}Oppdater{% else %}Legg til{% endif %}" />
+        </form>
+        <datalist id="suggestions"></datalist>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        function lastfm(method, query, callback) {
+            if (query.length == 0) return;
+            $.getJSON(`http://ws.audioscrobbler.com/2.0/?method=artist.${method}&artist=${query}&api_key=690e1ed3bc00bc91804cd8f7fe5ed6d4&limit=5&format=json`, callback);
+        }
+
+        document.querySelector('#id_name').addEventListener('input', event => {
+            var val = event.target.value;
+
+            lastfm('search', val, data => {
+                var items = data.results.artistmatches.artist;
+
+                if (items[0].name == val) {
+                    document.querySelector('#id_name').value = items[0].name;
+                    document.querySelector('#id_mbid').value = items[0].mbid;
+
+                    lastfm('getInfo', val, (data) => {
+                        document.querySelector('#id_artist_info').value = JSON.stringify(data.artist);
+
+                        var excludedTags = ['Norway', 'female vocalists', 'seen live', 'norwegian', 'norway', 'bergen'];
+
+                        document.querySelector('#id_genre').value = data.artist.tags.tag.find(t => !excludedTags.includes(t.name)).name;
+
+                        // booking_fee = 0.02kr/scrobble
+                        document.querySelector('#id_booking_fee').value  = Math.round(0.02 * parseInt(data.artist.stats.playcount) / 1000) * 1000;
+                    });
+
+                    lastfm('gettopalbums', val, data => {
+                        document.querySelector('#id_album_info').value = JSON.stringify(data.topalbums.album);
+                    });
+                }
+            });
+        });
+
+        document.querySelector("#id_name").addEventListener('keyup', (event) => {
+            var val = event.target.value;
+            lastfm('search', val, (data) => {
+                var items = data.results.artistmatches.artist;
+                var html = '';
+                for (var item of items) {
+                    html += `<option value="${item.name}"/>`;
+                }
+
+                document.querySelector('#suggestions').innerHTML = html;
+            });
+        })
+    </script>
+{% endblock %}
+
+
+
+

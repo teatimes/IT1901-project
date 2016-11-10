@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+    <link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+    <link rel="import" href="{% static 'components/paper-fab/paper-fab.html' %}">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        paper-material {
+            padding: 10px;
+            margin: 20px;
+            border-radius: 3px;
+            background-color: white;
+            @apply(--layout-justified);
+            @apply(--layout-horizontal);
+        }
+        paper-material > div {
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align: center;
+        }
+        paper-fab {
+            right: 20px;
+            bottom: 20px;
+            position: fixed;
+            --paper-fab-background: #941c2c;
+        }
+
+        .pending {
+            background: yellow;
+        }
+        .sent {  
+            background: orange  
+        }
+        .accepted { 
+            background: green; 
+        }
+        .declined { 
+            background: red; 
+        }
+        .published { 
+            background: cornflowerblue; 
+        }
+        .color-codes {
+            margin: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .color-code-18width {
+            flex: 0 0 20%;
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align: center;
+        }
+        .color-code-27width {
+            flex: 0 0 27%;
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% if not user|is_band_user %}
+    <div class="color-codes">
+        <div class="pending color-code-18width">
+            Tilbud til godkjenning: {{ pending_count }}
+        </div>
+        <div class="sent color-code-27width">
+            Tilbud sendt til band manager: {{ sent_count }}
+        </div>
+        <div class="accepted color-code-27width">
+            Tilbud godkjent av band manager: {{ approved_count }}
+        </div>
+        <div class="published color-code-18width">
+            Konserter publisert: {{ published_count }}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="color-codes">
+        <div class="sent color-code-27width">
+            Antall mottatte tilbud: {{ received_count_band }}
+        </div>
+        <div class="accepted color-code-27width">
+            Antall aksepterte tilbud: {{ accepted_count_band }}
+        </div>
+        <div class="published color-code-27width">
+            Antall publiserte konserter: {{ published_count_band }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% for offer in object_list %}
+        <a href="/{% if offer.status != 4 %}offer{% else %}event{% endif %}/{{ offer.pk }}">
+            <paper-material>
+                <div>{{ offer.artist.name }} @ {{ offer.stage }} ( {{ offer.date }} )</div>
+                <div class="{{ offer.get_status_display }}">{{ offer.get_status_display }}</div>
+            </paper-material>
+        </a>
+    {% endfor %}
+
+    <a href="/offer/add"><paper-fab icon="add"></paper-fab></a>
+{% endblock %}

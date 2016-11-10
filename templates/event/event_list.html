@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block import %}
+    <link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        paper-material {
+            @apply(--layout-horizontal);
+            @apply(--layout-justified);
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        form {
+            @apply(--layout-horizontal);
+            @apply(--layout-center-justified);
+            @apply(--layout-center);
+        }
+
+        form > * {
+            @apply(--layout-vertical);
+            margin: 0 10px;
+        }
+
+        #container {
+            padding: 20px;
+        }
+
+        label {
+            text-align: center;
+        }
+
+        form > div {
+            width: 100px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="container">
+        <form class="auto-submit" action="/events/" method="get">
+            <div><label>Sjanger</label> {{ event_form.genre }}</div>
+            <div><label>Scene</label>{{ event_form.stage }}</div>
+            <div><label>Semester</label> {{ event_form.semester }}</div>
+        </form>
+        <div>
+        {% for event in object_list %}
+            <a href="/event/{{ event.pk }}">
+                <paper-material>
+                    <div>
+                        <div>{{ event.artist.name }} @ {{ event.stage }} </div>
+                        <div>{{ event.date }} </div>
+                    </div>
+                    <div>
+                        <div>Billettpris: {{ event.ticket_price }},-</div>
+                        <div>Oppmøte: {{ event.attendance }}/{{ event.stage.capacity }}</div>
+                    </div>
+                </paper-material>
+            </a>
+        {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('.auto-submit').change(function (){
+  this.submit();
+})
+</script>
+{% endblock %}

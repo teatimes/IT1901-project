@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+    <!-- Retrieving necessary javascript and css for the calendar -->
+    <script src="{% static 'components/fullcalendar/lib/moment.min.js' %}"></script>
+    <script src="{% static 'components/fullcalendar/fullcalendar.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'components/fullcalendar/fullcalendar.min.css' %}">
+{% endblock %}
+
+{% block script %}
+    <script type='text/javascript'>
+        $(document).ready(function() {
+            
+            /* Making list for events, which is required by imported javascripts */
+            var events = [];
+            var offers = JSON.parse('{{ events |safe }}');
+
+            /* Changing the "start" keys from timestamps to readable dates */
+            for (offer of offers) {
+                offer.start = new Date(offer.start * 1000);
+            
+            /* Javascript unique for users who are either band member or band manager */
+            {% if user|is_band_user %}
+
+                /* status == 2 --> Offer sent to band manager */
+                if (offer.status == 2) {
+                    offer.backgroundColor = 'orange';
+                    offer.borderColor = 'orange';
+                }
+                /* status 3 and 4 --> Respectively offer accepted by band manager and concert published*/
+                else if (offer.status == 3 || offer.status == 4) {
+                    offer.backgroundColor = 'green';
+                    offer.borderColor = 'green';
+                }
+                /* status 5 --> Rehearsal for band */
+                else if(offer.status == 5){
+                    offer.backgroundColor = 'steelblue';
+                    offer.borderColor = 'steelblue';
+                }
+            }   
+
+            /* aspectRatio defines the relation between width and height of the calendar */
+            $('#calendar').fullCalendar({
+                aspectRatio: 1.65,
+                editable: false,
+                fixedWeekCount: false,
+                weekMode: 'liquid',
+                url: '#',
+                events: offers,
+            }); 
+
+            /* Javascript unique for users who are neither band member nor band manager */
+            {% else %}
+                /* status 0 --> Offer waiting approval by director */
+                if (offer.status == 0) {
+                    offer.backgroundColor = "yellow";
+                    offer.borderColor = 'yellow';
+                }
+                /* status 2 --> Offer sent to band manager */
+                else if (offer.status == 2) {
+                    offer.backgroundColor = 'orange';
+                    offer.borderColor = 'orange';
+                }
+                /* status 3 --> Offer accepted by band manager */
+                else if (offer.status == 3) {
+                    offer.backgroundColor = 'green';
+                    offer.borderColor = 'green';
+                }
+                /* status 4 --> Concert published */
+                else if (offer.status == 4) {
+                    offer.backgroundColor = 'cornflowerblue';
+                    offer.borderColor = 'cornflowerblue';
+                }
+            };
+
+            /* aspectRatio defines the relation between width and height of the calendar */
+            $('#calendar').fullCalendar({
+                aspectRatio: 2.35,
+                editable: false,
+                fixedWeekCount: false,
+                weekMode: 'liquid',
+                url: '#',
+                events: offers,
+            }); 
+            {% endif %}
+
+        })
+    </script>
+{% endblock %}
+
+{% block style  %}
+    <style is="custom-style">
+        ul {
+            list-style-type: square;
+            margin: 5% 0 5% 10%;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 5%;
+        }
+        h3 {
+            margin: 5% 0 0 10%;
+            padding: 0;
+        }
+        #band-container {
+            display: flex;
+        } 
+        #band-calendar-color-codes {
+            margin: 2%;
+            flex: 0 0 70%;
+            display: flex;
+            flex-direction: column;
+        }        
+        #band-color-codes {
+            margin-top: 2%;
+            display:flex;
+            justify-content: space-between;
+        }
+        .band-color-codes {
+            flex: 0 0 30%; 
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align:center;
+        }
+        #band-notes {
+            margin: 2% 2% 2% 0;
+            flex: 0 0 24%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .band-notes {
+            height: 31%;
+            overflow:auto;
+            border-width: 1px;
+            border-style:solid;
+        }
+        #container {
+            margin: 2%;
+            display: flex;
+            flex-direction: column;
+        }
+        #color-codes {
+            margin-top: 2%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .color-codes-20width {
+            flex: 0 0 20%; 
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align:center;
+        }
+        .color-codes-25width {
+            flex: 0 0 25%; 
+            padding: 0.4%;
+            border-radius: 3px;
+            text-align:center;
+        }
+        .pending{ 
+            background: yellow; 
+        }
+        .sent{
+            background: orange;
+        }
+        .accepted {
+            background: green;
+        }
+        .published {
+            background: cornflowerblue;
+        }
+        .rehearsal {
+            background: steelblue;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Content for users who are either band member or band manager -->
+    {% if user|is_band_user %}
+        <div id="band-container">
+            <div id="band-calendar-color-codes">
+                <!-- id calendar needed by javascript -->
+                <div id="calendar"></div>
+                <div id="band-color-codes">
+                    <div class="sent band-color-codes">
+                        Tilbud
+                    </div>
+                    <div class="accepted band-color-codes">
+                        Konsert
+                    </div>
+                    <div class="rehearsal band-color-codes">
+                        Øvingstid
+                    </div>
+                </div>
+            </div>
+            <div id="band-notes">
+                <div class="band-notes">
+                    <h3>
+                        Tilbud: 
+                    </h3>
+                    <ul>
+                        <!-- Retrieving strings from offer_list and making a list -->
+                        {% for offer in offer_list %}
+                            <li>{{ offer }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="band-notes">
+                    <h3>
+                        Konserter:
+                    </h3>
+                    <ul>
+                        <!-- Retrieving strings from concert_list and making a list -->
+                        {% for concert in concert_list %}
+                            <li>{{ concert }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="band-notes">
+                    <h3>
+                        Øvingstider:
+                    </h3>
+                    <ul>
+                        <!-- Retrieving strings from rehearsal_list and making a list -->
+                        {% for rehearsal in rehearsal_list %}
+                            <li>{{ rehearsal }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    <!-- Content for users who are neither band member nor band manager -->
+    {% else %}
+
+        <div id="container">
+            <!-- id calendar needed by javascript -->
+            <div id="calendar"></div>
+            <div id="color-codes">
+                <div class="pending color-codes-20width">
+                    Tilbud til godkjenning
+                </div>
+                <div class="sent color-codes-25width">
+                    Tilbud sendt til band manager
+                </div>
+                <div class="accepted color-codes-25width">
+                    Tilbud godkjent av band manager
+                </div>
+                <div class="published color-codes-20width">
+                    Konserter publisert
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
+{% endblock %}

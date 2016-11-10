@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+
+{% block import %}
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        #container {
+            @apply(--layout-vertical);
+            @apply(--layout-center);
+
+        }
+        .wrapper-horizontal {
+            @apply(--layout-horizontal);
+            @apply(--layout-around-justified);
+            width: 100%;
+
+    }
+    paper-material {
+        min-height: 30vh;
+        width: 50%;
+        margin: 3vh;
+    }
+
+        paper-material {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+<div id="container">
+    <div class="wrapper-horizontal">
+    <paper-material>
+        <h2>Info</h2>
+        <div><label>Artist: </label><a href="/artist/{{ object.artist.pk }}">{{ object.artist }}</a></div>
+        <div><label>Scene: </label>{{ object.stage }}</div>
+        <div><label>Dato: </label>{{ object.date }}</div>
+    </paper-material>
+
+
+    <paper-material>
+    <h2>Tekniske behov</h2>
+
+    <form onsubmit="onSubmit(event)" method="post" action="" {% if not user|is_artist_manager %}hidden{% endif %}>
+        {% csrf_token %}
+        <div>{{ req_form.requirements }}</div>
+        <input type="submit" title="Update">
+    </form>
+    {% if not user|is_artist_manager %}
+        <div>
+            {% autoescape off %}
+            {{ object.requirements|listify }}
+            {% endautoescape %}
+        </div>
+    {% endif %}
+    </paper-material>
+    </div>
+    <paper-material>
+        <h2>Funksjonærer</h2>
+
+        <div>
+            <h3>Lys/lyd-teknikkere: 18:00 - 24:00 </h3>
+            <ul>
+            {% for worker  in sound_light %}
+                <li> {{ worker}} </li>
+            {% endfor %}
+            </ul>
+
+            <h3>Opp/nedrigging: 09:00 - 12:00 og 24:00 - 03:00 </h3>
+            <ul>
+            {% for worker  in rigging %}
+                <li> {{ worker }} </li>
+            {% endfor %}
+            </ul>
+        </div>
+        </paper-material>
+
+
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function onSubmit() {
+        alert('Behov oppdatert');
+    }
+
+    var container = document.querySelector('#container');
+    container.style.background = 'url({% get_artist_image object.artist "mega" %}) center center no-repeat';
+    container.style.backgroundSize = 'cover';
+    container.style.height = '100%';
+</script>
+{% endblock %}

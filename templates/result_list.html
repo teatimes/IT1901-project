@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% load booky_extras %}
+{% block import %}
+<link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+{% endblock %}
+
+{% block style %}
+<style is="custom-style">
+    paper-material {
+    @apply(--layout-horizontal);
+    @apply(--layout-justified);
+    margin: 20px 0;
+    padding: 10px;
+    background: white;
+    border-radius: 3px;
+    }
+
+    form {
+    @apply(--layout-horizontal);
+    @apply(--layout-center-justified);
+    @apply(--layout-center);
+    }
+
+    form > * {
+        @apply(--layout-vertical);
+        margin: 20px;
+    }
+
+    #container {
+        padding: 20px;
+    }
+
+    td {
+        margin: 10px;
+        border-bottom: 1px dotted black;
+    }
+
+
+    #fortjeneste, #fortjeneste_topp {
+        margin-right: 20px;
+        font-weight: bold;
+        text-align: right;
+    }
+
+    #billettsalg, #billettsalg_topp, #oppmøte, #oppmøte_topp, #kostnad, #kostnad_topp, #billettpris, #billettpris_topp {
+        text-align: right;
+    }
+
+    #table_head {
+        font-weight: bold;
+    }
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="container">
+    <h2>Resultater</h2>
+
+    <form class="auto-submit" action="/results/" method="get">
+        <div>{{ event_form.stage.label_tag }} {{ event_form.stage }}</div>
+    </form>
+        <table width="100%" id="results_table" class="results_class">
+            <tr id="table_head">
+                <td id="artist_topp">Artist</td>
+                <td id="scene_topp">Scene</td>
+                <td id="dato_topp">Dato</td>
+                <td id="fortjeneste_topp">Fortjeneste</td>
+                <td id="kostnad_topp">Kostnad</td>
+                <td id="billettsalg_topp">Fortjeneste billettsalg</td>
+                <td id="billettpris_topp">Billettpris</td>
+                <td id="oppmøte_topp">Oppmøtte</td>
+            </tr>
+            <!-- This is an empty line -->
+            <tr><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td></tr>
+            <!-- Creates the table -->
+            {% for event in object_list %}
+            <tr id="results_rows">
+                <td id="artist">{{ event.artist.name }}</td>
+                <td id="scene">{{ event.stage }}</td>
+                <td id="dato">{{ event.date }}</td>
+                <td id="fortjeneste">{% get_profitt event %} kr</td>
+                <td id="kostnad">{{ event.artist.booking_fee }} kr</td>
+                <td id="billettsalg">{% widthratio event.attendance 1 event.ticket_price %} kr</td>
+                <td id="billettpris">{{ event.ticket_price }} kr</td>
+                <td id="oppmøte">{{ event.attendance }}/{{ event.stage.capacity }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+<!-- Makes the filter work properly -->
+{% block script %}
+<script>
+$('.auto-submit').change(function (){
+  this.submit();
+})
+</script>
+{% endblock %}

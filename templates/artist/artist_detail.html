@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block import %}
+    <link rel="import" href="{% static 'components/paper-material/paper-material.html' %}">
+    <link rel="import" href="{% static 'components/paper-button/paper-button.html' %}">
+{% endblock %}
+
+{% block style %}
+    <style is="custom-style">
+        #banner {
+            position: relative;
+            height: 300px;
+        }
+
+        #artist {
+            position: absolute;
+            color: white;
+            bottom: 20px;
+            left: 20px;
+            @apply(--paper-font-display2);
+        }
+
+        #info {
+            @apply(--layout-horizontal);
+            @apply(--layout-center-justified);
+        }
+
+        #info > div {  margin: 20px;  }
+
+        #bio { margin: 20px; }
+        {% if object.album_info %}
+        #albums {
+            overflow-x: scroll;
+            white-space: nowrap;
+        }
+        {% endif %}
+        .album {
+            position: relative;
+            display: inline-block;
+            height: 200px;
+            width: 200px;
+            margin: 10px;
+            border-radius: 2px;
+        }
+
+        .album > div {
+            position: absolute;
+            left: 10px;
+            color: white;
+        }
+
+        /*Album title*/
+        .album > div:nth-of-type(1) {
+            bottom: 42px;
+        }
+        /*Album listeners*/
+        .album > div:nth-of-type(2) {
+            bottom: 26px;
+            font-size: 70%;
+        }
+        .album > div:nth-of-type(3) {
+            bottom: 10px;
+            font-size: 70%;
+        }
+
+        #container { padding: 20px; }
+
+        .event {
+            padding: 10px;
+            margin: 20px 0;
+            @apply(--layout-horizontal);
+            @apply(--layout-justified);
+            background: white;
+        }
+
+        h4 {
+            color: #444444;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="banner">
+        <div id="artist">{{ object.name }} {% if self %} - Velkommen! {% endif %}</div>
+    </div>
+    <div id="info">
+        <div><b>Sjanger:&nbsp;</b><span id="genre">{{ object.genre.name|capfirst }}</span></div>
+        <div><b>Lyttere:&nbsp;</b><span id="listeners"></span></div>
+    </div>
+    <div id="bio"></div>
+    <div id="albums"></div>
+    <div id="container">
+
+    <h2>{% if self %}Deres k{% else %}K{% endif %}onserter på Samfundet</h2>
+        <h4>Kommende</h4>
+        {% if not upcomming %}<div>Ingen</div>{% endif %}
+        {% for event in upcomming %}
+            <a href="{{ event.get_absolute_url }}">
+                <paper-material class="event">
+                    <div>
+                        <div>{{ event.artist.name }} @ {{ event.stage.name }}</div>
+                        <div>{{ event.date }}</div>
+                    </div>
+                    <div>
+                        <div><label>Billettpris: </label>{{ event.ticket_price }},-</div>
+                        <div><label>Oppmøte: </label>{{ event.attendance }}/{{ event.stage.capacity }}</div>
+                    </div>
+                </paper-material>
+            </a>
+        {% endfor %}
+        <h4>Tidligere</h4>
+        {% if not old %}<div>Ingen</div>{% endif %}
+        {% for event in old %}
+            <a href="{{ event.get_absolute_url }}">
+                <paper-material class="event">
+                    <div>
+                        <div>{{ event.artist.name }} @ {{ event.stage.name }}</div>
+                        <div>{{ event.date|timesince }} ago</div>
+                    </div>
+                    <div>
+                        <div><label>Billettpris: </label>{{ event.ticket_price }},-</div>
+                        <div><label>Oppmøte: </label>{{ event.attendance }}/{{ event.stage.capacity }}</div>
+                    </div>
+                </paper-material>
+            </a>
+        {% endfor %}
+        <h2>Konserter i Norge</h2>
+        <div id="setlists">
+            <div>Ingen</div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var artistInfo =  {% if object.artist_info  %} JSON.parse(String.raw`{{ object.artist_info | safe }}`);  {% else %} null; {% endif %}
+        var albumInfo =   {% if object.album_info %} JSON.parse(String.raw`{{ object.album_info | safe}}`);    {% else %} null; {% endif %}
+        var setlistInfo = {% if object.setlist_info %} JSON.parse(String.raw`{{ object.setlist_info | safe }}`); {% else %} null; {% endif %}
+
+
+        if (artistInfo) {
+            var banner = document.querySelector('#banner');
+            banner.style.background = `url(${artistInfo.image.find(a => a.size == 'mega')['#text']}) no-repeat center center`;
+            banner.style.backgroundSize = 'cover';
+            document.querySelector('#bio').innerHTML = artistInfo.bio.summary;
+            document.querySelector('#listeners').innerHTML = artistInfo.stats.listeners;
+        } else {
+            var banner = document.querySelector('#banner');
+            banner.style.background = `url(http://pre01.deviantart.net/cbf8/th/pre/i/2014/019/2/3/autumn_blur___free_texture___background_by_supersweetstock-d72t65j.jpg) no-repeat center center`;
+            banner.style.backgroundSize = 'cover';
+            document.querySelector('#listeners').innerHTML = 'N/A';
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        if (albumInfo) {
+            for (var album of albumInfo) {
+                var el = document.createElement('paper-material');
+                el.className = 'album';
+                el.innerHTML = `<div>${album.name}</div><div>${album.playcount}&nbsp;lyttere</div><div>${getRandomInt(1000, album.playcount / 100)} solgte eksemplarer</div>`;
+                el.style.background = `url(${album.image.find(img => img.size == 'large')['#text']}) no-repeat center center`;
+                el.style.backgroundSize = 'cover';
+                document.querySelector('#albums').appendChild(el);
+            }
+        }
+        if (setlistInfo) {
+            var html = '';
+            for (var setlist of setlistInfo) {
+                html += `
+<paper-material class="event">
+    <div>${setlist.venue['@name']} ${setlist.venue.city['@name']}</div> <div>${setlist['@eventDate']}</div>
+</paper-material>`;
+
+            }
+            document.querySelector('#setlists').innerHTML = html;
+        }
+
+    </script>
+{% endblock %}
+
