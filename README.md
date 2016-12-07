@@ -15,15 +15,15 @@ Open cmd, navigate to the folder with the downloaded code.
 
 To populate the database
 
-'''
+```
 python manage.py reset.py
-'''
+```
 
 To deploy the webpage
 
-'''
+```
 python manage.py runserver
-'''
+```
 
 Open a browser and go to http://127.0.0.1:8000/
 
