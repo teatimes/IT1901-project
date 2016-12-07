@@ -16,7 +16,7 @@ Open cmd, navigate to the folder with the downloaded code.
 To populate the database
 
 ```
-python manage.py reset.py
+python reset.py
 ```
 
 To deploy the webpage
