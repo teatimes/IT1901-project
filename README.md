@@ -34,7 +34,7 @@ Organizer: olav
 Sound- or light technician: truls, torstein or turid
 Rigging: roger or ronja
 Bandmember: bandname (lowercase and _ for space)
-Bandmanager: bandame + _m
+Bandmanager: bandame and _m 
 
 The password is 123qwe123qwe for all of them.
 
